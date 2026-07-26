@@ -8,6 +8,10 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-temporary-key-change-
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.up.railway.app',
+    'https://cpu-disco-app-production.up.railway.app',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
