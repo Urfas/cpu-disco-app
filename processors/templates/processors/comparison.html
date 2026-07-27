@@ -5,11 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CPU Disco — Сравнение процессоров</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: system-ui, -apple-system, sans-serif;
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
@@ -17,10 +13,7 @@
             min-height: 100vh;
             padding: 40px 20px;
         }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
+        .container { max-width: 900px; margin: 0 auto; }
         h1 {
             font-size: 2.5rem;
             margin-bottom: 8px;
@@ -28,10 +21,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .subtitle {
-            color: #aaa;
-            margin-bottom: 40px;
-        }
+        .subtitle { color: #aaa; margin-bottom: 40px; }
         .add-btn {
             background: linear-gradient(90deg, #00ff9d, #00c6ff);
             color: #000;
@@ -43,19 +33,72 @@
             cursor: pointer;
             transition: transform 0.2s;
         }
-        .add-btn:hover {
-            transform: scale(1.03);
-        }
+        .add-btn:hover { transform: scale(1.03); }
         .empty-state {
             margin-top: 80px;
             text-align: center;
             color: #777;
         }
-        .empty-state span {
-            font-size: 3rem;
-            display: block;
-            margin-bottom: 15px;
+        .empty-state span { font-size: 3rem; display: block; margin-bottom: 15px; }
+
+        /* Модальное окно */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 80px;
         }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h2 { font-size: 1.4rem; }
+        .close-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .search-input {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+        }
+        .search-input:focus { border-color: #00ff9d; }
+        .search-results {
+            margin-top: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .search-item {
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .search-item:hover { background: rgba(0,255,157,0.1); }
     </style>
 </head>
 <body>
@@ -63,13 +106,59 @@
         <h1>CPU Disco</h1>
         <p class="subtitle">Умный инструмент сравнения процессоров</p>
 
-        <button class="add-btn">+ Добавить процессор</button>
+        <button class="add-btn" onclick="openModal()">+ Добавить процессор</button>
 
-        <div class="empty-state">
+        <div class="empty-state" id="emptyState">
             <span>🔍</span>
             <p>Список сравнения пуст</p>
             <p style="margin-top: 8px; font-size: 0.95rem;">Нажмите «Добавить процессор», чтобы начать</p>
         </div>
+
+        <div id="comparisonList"></div>
     </div>
+
+    <!-- Модальное окно поиска -->
+    <div class="modal" id="searchModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Добавить процессор</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <input type="text" class="search-input" id="searchInput" placeholder="Начните вводить название..." oninput="searchProcessors()">
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('searchModal').classList.add('active');
+            document.getElementById('searchInput').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('searchModal').classList.remove('active');
+            document.getElementById('searchInput').value = '';
+            document.getElementById('searchResults').innerHTML = '';
+        }
+
+        // Пока заглушка. На следующем шаге подключим реальный поиск из базы.
+        function searchProcessors() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const results = document.getElementById('searchResults');
+
+            if (query.length < 2) {
+                results.innerHTML = '';
+                return;
+            }
+
+            // Временная заглушка
+            results.innerHTML = `<div class="search-item">Поиск пока в разработке...</div>`;
+        }
+
+        // Закрытие по клику вне окна
+        document.getElementById('searchModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+    </script>
 </body>
 </html>
