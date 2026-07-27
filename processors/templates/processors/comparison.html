@@ -12,48 +12,67 @@
         }
         body {
             font-family: system-ui, -apple-system, sans-serif;
-            background: #0f0c29;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: #fff;
-            padding: 30px;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
         }
         h1 {
-            margin-bottom: 20px;
+            font-size: 2.5rem;
+            margin-bottom: 8px;
             background: linear-gradient(90deg, #00ff9d, #00c6ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .processor {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-        }
-        .processor h2 {
-            font-size: 1.3rem;
-            margin-bottom: 8px;
-        }
-        .meta {
+        .subtitle {
             color: #aaa;
-            font-size: 0.95rem;
+            margin-bottom: 40px;
+        }
+        .add-btn {
+            background: linear-gradient(90deg, #00ff9d, #00c6ff);
+            color: #000;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .add-btn:hover {
+            transform: scale(1.03);
+        }
+        .empty-state {
+            margin-top: 80px;
+            text-align: center;
+            color: #777;
+        }
+        .empty-state span {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
-    <h1>CPU Disco</h1>
-    <p style="margin-bottom: 30px; color: #888;">Инструмент сравнения процессоров (первая версия)</p>
+    <div class="container">
+        <h1>CPU Disco</h1>
+        <p class="subtitle">Умный инструмент сравнения процессоров</p>
 
-    {% for cpu in processors %}
-        <div class="processor">
-            <h2>{{ cpu.name }}</h2>
-            <div class="meta">
-                {{ cpu.manufacturer }} · 
-                {% if cpu.cores %}{{ cpu.cores }} ядер{% endif %}
-                {% if cpu.threads %} / {{ cpu.threads }} потоков{% endif %}
-                {% if cpu.release_year %} · {{ cpu.release_year }}{% endif %}
-            </div>
+        <button class="add-btn">+ Добавить процессор</button>
+
+        <div class="empty-state">
+            <span>🔍</span>
+            <p>Список сравнения пуст</p>
+            <p style="margin-top: 8px; font-size: 0.95rem;">Нажмите «Добавить процессор», чтобы начать</p>
         </div>
-    {% empty %}
+    </div>
+</body>
+</html>
         <p>Пока нет процессоров в базе.</p>
     {% endfor %}
 </body>
