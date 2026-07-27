@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU Disco — Сравнение процессоров</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0f0c29;
+            color: #fff;
+            padding: 30px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #00ff9d, #00c6ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .processor {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+        .processor h2 {
+            font-size: 1.3rem;
+            margin-bottom: 8px;
+        }
+        .meta {
+            color: #aaa;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>CPU Disco</h1>
+    <p style="margin-bottom: 30px; color: #888;">Инструмент сравнения процессоров (первая версия)</p>
+
+    {% for cpu in processors %}
+        <div class="processor">
+            <h2>{{ cpu.name }}</h2>
+            <div class="meta">
+                {{ cpu.manufacturer }} · 
+                {% if cpu.cores %}{{ cpu.cores }} ядер{% endif %}
+                {% if cpu.threads %} / {{ cpu.threads }} потоков{% endif %}
+                {% if cpu.release_year %} · {{ cpu.release_year }}{% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <p>Пока нет процессоров в базе.</p>
+    {% endfor %}
+</body>
+</html>
