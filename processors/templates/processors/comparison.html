@@ -141,18 +141,40 @@
             document.getElementById('searchResults').innerHTML = '';
         }
 
-        // Пока заглушка. На следующем шаге подключим реальный поиск из базы.
-        function searchProcessors() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const results = document.getElementById('searchResults');
+        async function searchProcessors() {
+            const query = document.getElementById('searchInput').value.trim();
+            const resultsDiv = document.getElementById('searchResults');
 
             if (query.length < 2) {
-                results.innerHTML = '';
+                resultsDiv.innerHTML = '';
                 return;
             }
 
-            // Временная заглушка
-            results.innerHTML = `<div class="search-item">Поиск пока в разработке...</div>`;
+            resultsDiv.innerHTML = '<div class="search-item">Ищем...</div>';
+
+            try {
+                const response = await fetch(`/api/search/?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (data.results.length === 0) {
+                    resultsDiv.innerHTML = '<div class="search-item">Ничего не найдено</div>';
+                    return;
+                }
+
+                resultsDiv.innerHTML = data.results.map(cpu => `
+                    <div class="search-item" onclick="addProcessor(${cpu.id}, '${cpu.name}')">
+                        <strong>${cpu.name}</strong><br>
+                        <small style="color:#aaa">${cpu.manufacturer} · ${cpu.cores || '?'} ядер · ${cpu.release_year || ''}</small>
+                    </div>
+                `).join('');
+            } catch (error) {
+                resultsDiv.innerHTML = '<div class="search-item">Ошибка поиска</div>';
+            }
+        }
+
+        function addProcessor(id, name) {
+            alert('Добавлен: ' + name + ' (пока только тест)');
+            closeModal();
         }
 
         // Закрытие по клику вне окна
