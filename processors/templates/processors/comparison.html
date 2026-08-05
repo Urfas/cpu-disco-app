@@ -13,7 +13,7 @@
             min-height: 100vh;
             padding: 40px 20px;
         }
-        .container { max-width: 900px; margin: 0 auto; }
+        .container { max-width: 1000px; margin: 0 auto; }
         h1 {
             font-size: 2.5rem;
             margin-bottom: 8px;
@@ -21,25 +21,60 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .subtitle { color: #aaa; margin-bottom: 40px; }
-        .add-btn {
-            background: linear-gradient(90deg, #00ff9d, #00c6ff);
-            color: #000;
+        .subtitle { color: #aaa; margin-bottom: 30px; }
+        .top-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .add-btn, .clear-btn {
             border: none;
-            padding: 14px 28px;
-            font-size: 1.1rem;
+            padding: 12px 24px;
+            font-size: 1rem;
             font-weight: 600;
             border-radius: 12px;
             cursor: pointer;
             transition: transform 0.2s;
         }
-        .add-btn:hover { transform: scale(1.03); }
+        .add-btn {
+            background: linear-gradient(90deg, #00ff9d, #00c6ff);
+            color: #000;
+        }
+        .clear-btn {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .add-btn:hover, .clear-btn:hover { transform: scale(1.03); }
         .empty-state {
-            margin-top: 80px;
+            margin-top: 60px;
             text-align: center;
             color: #777;
         }
         .empty-state span { font-size: 3rem; display: block; margin-bottom: 15px; }
+
+        /* Карточка процессора */
+        .cpu-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .cpu-info h3 { font-size: 1.25rem; margin-bottom: 6px; }
+        .cpu-meta { color: #aaa; font-size: 0.95rem; }
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #ff6b6b;
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
 
         /* Модальное окно */
         .modal {
@@ -106,7 +141,10 @@
         <h1>CPU Disco</h1>
         <p class="subtitle">Умный инструмент сравнения процессоров</p>
 
-        <button class="add-btn" onclick="openModal()">+ Добавить процессор</button>
+        <div class="top-bar">
+            <button class="add-btn" onclick="openModal()">+ Добавить процессор</button>
+            <button class="clear-btn" onclick="clearAll()" id="clearBtn" style="display:none;">Очистить всё</button>
+        </div>
 
         <div class="empty-state" id="emptyState">
             <span>🔍</span>
@@ -130,6 +168,8 @@
     </div>
 
     <script>
+        let selectedCPUs = [];
+
         function openModal() {
             document.getElementById('searchModal').classList.add('active');
             document.getElementById('searchInput').focus();
@@ -162,7 +202,7 @@
                 }
 
                 resultsDiv.innerHTML = data.results.map(cpu => `
-                    <div class="search-item" onclick="addProcessor(${cpu.id}, '${cpu.name}')">
+                    <div class="search-item" onclick='addProcessor(${JSON.stringify(cpu)})'>
                         <strong>${cpu.name}</strong><br>
                         <small style="color:#aaa">${cpu.manufacturer} · ${cpu.cores || '?'} ядер · ${cpu.release_year || ''}</small>
                     </div>
@@ -172,9 +212,54 @@
             }
         }
 
-        function addProcessor(id, name) {
-            alert('Добавлен: ' + name + ' (пока только тест)');
+        function addProcessor(cpu) {
+            // Не добавляем дубликаты
+            if (selectedCPUs.find(c => c.id === cpu.id)) {
+                closeModal();
+                return;
+            }
+
+            selectedCPUs.push(cpu);
+            renderList();
             closeModal();
+        }
+
+        function removeProcessor(id) {
+            selectedCPUs = selectedCPUs.filter(c => c.id !== id);
+            renderList();
+        }
+
+        function clearAll() {
+            selectedCPUs = [];
+            renderList();
+        }
+
+        function renderList() {
+            const list = document.getElementById('comparisonList');
+            const empty = document.getElementById('emptyState');
+            const clearBtn = document.getElementById('clearBtn');
+
+            if (selectedCPUs.length === 0) {
+                list.innerHTML = '';
+                empty.style.display = 'block';
+                clearBtn.style.display = 'none';
+                return;
+            }
+
+            empty.style.display = 'none';
+            clearBtn.style.display = 'inline-block';
+
+            list.innerHTML = selectedCPUs.map(cpu => `
+                <div class="cpu-card">
+                    <div class="cpu-info">
+                        <h3>${cpu.name}</h3>
+                        <div class="cpu-meta">
+                            ${cpu.manufacturer} · ${cpu.cores || '?'} ядер / ${cpu.threads || '?'} потоков · ${cpu.release_year || ''}
+                        </div>
+                    </div>
+                    <button class="remove-btn" onclick="removeProcessor(${cpu.id})">×</button>
+                </div>
+            `).join('');
         }
 
         // Закрытие по клику вне окна
