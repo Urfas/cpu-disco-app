@@ -441,53 +441,49 @@
                 <div class="cpu-card">
                     <button class="remove-btn" onclick="removeProcessor(${cpu.id})">×</button>
 
-                    <div class="cpu-visual">
-                        <!-- Верхний ряд -->
+                                        <div class="cpu-visual">
                         <div class="icon icon-top-1">
                             <div class="icon-emoji">📅</div>
                             <div class="icon-value">${cpu.release_year || '—'}</div>
                         </div>
                         <div class="icon icon-top-2">
-                            <div class="icon-emoji">⚙️</div>
-                            <div class="icon-value">—</div>
+                            <div class="icon-emoji">🔬</div>
+                            <div class="icon-value">${cpu.lithography || '—'}</div>
                         </div>
                         <div class="icon icon-top-3">
                             <div class="icon-emoji">⚡</div>
-                            <div class="icon-value">—</div>
+                            <div class="icon-value">${cpu.tdp ? cpu.tdp + 'W' : '—'}</div>
                         </div>
 
-                        <!-- Левая -->
                         <div class="icon icon-left-1">
                             <div class="icon-emoji">🔌</div>
-                            <div class="icon-value">—</div>
+                            <div class="icon-value">${cpu.socket || '—'}</div>
                         </div>
 
-                        <!-- Фото -->
                         <div class="cpu-photo">
-                            <div class="cpu-photo-placeholder">🖥️</div>
+                            ${cpu.image 
+                                ? `<img src="${cpu.image}" alt="${cpu.name}">` 
+                                : `<div class="cpu-photo-placeholder">🖥️</div>`}
                         </div>
 
-                        <!-- Правая -->
                         <div class="icon icon-right-1">
                             <div class="icon-emoji">🧠</div>
                             <div class="icon-value">${cpu.cores || '?'}/${cpu.threads || '?'}</div>
                         </div>
 
-                        <!-- Нижний ряд -->
                         <div class="icon icon-bottom-1">
                             <div class="icon-emoji">🌡️</div>
-                            <div class="icon-value">—</div>
+                            <div class="icon-value">${cpu.max_temp ? cpu.max_temp + '°' : '—'}</div>
                         </div>
                         <div class="icon icon-bottom-2">
                             <div class="icon-emoji">💾</div>
-                            <div class="icon-value">—</div>
+                            <div class="icon-value">${cpu.memory_support ? cpu.memory_support.split(' ')[0] : '—'}</div>
                         </div>
                         <div class="icon icon-bottom-3">
                             <div class="icon-emoji">⋯</div>
                             <div class="icon-value">ещё</div>
                         </div>
                     </div>
-
                     <div class="cpu-right">
                         <div>
                             <div class="cpu-name">${cpu.name}</div>
