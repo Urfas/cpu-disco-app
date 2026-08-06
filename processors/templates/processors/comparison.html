@@ -11,29 +11,37 @@
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
             color: #fff;
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 30px 20px;
         }
-        .container { max-width: 1000px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        /* Шапка */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 8px;
+            font-size: 2.2rem;
             background: linear-gradient(90deg, #00ff9d, #00c6ff);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .subtitle { color: #aaa; margin-bottom: 30px; }
-        .top-bar {
+        .top-controls {
             display: flex;
             gap: 12px;
-            margin-bottom: 30px;
+            align-items: center;
             flex-wrap: wrap;
         }
         .add-btn, .clear-btn {
             border: none;
-            padding: 12px 24px;
-            font-size: 1rem;
+            padding: 11px 20px;
+            font-size: 0.95rem;
             font-weight: 600;
-            border-radius: 12px;
+            border-radius: 10px;
             cursor: pointer;
             transition: transform 0.2s;
         }
@@ -42,13 +50,25 @@
             color: #000;
         }
         .clear-btn {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.08);
             color: #fff;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.15);
         }
         .add-btn:hover, .clear-btn:hover { transform: scale(1.03); }
+
+        .benchmark-select {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        /* Пустое состояние */
         .empty-state {
-            margin-top: 60px;
+            margin-top: 80px;
             text-align: center;
             color: #777;
         }
@@ -56,27 +76,151 @@
 
         /* Карточка процессора */
         .cpu-card {
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.04);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 30px;
+            position: relative;
         }
-        .cpu-info h3 { font-size: 1.25rem; margin-bottom: 6px; }
-        .cpu-meta { color: #aaa; font-size: 0.95rem; }
         .remove-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
             background: none;
             border: none;
             color: #ff6b6b;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             cursor: pointer;
-            padding: 5px 10px;
+            z-index: 5;
         }
 
-        /* Модальное окно */
+        /* Левая часть — фото + иконки */
+        .cpu-visual {
+            display: grid;
+            grid-template-columns: 60px 1fr 60px;
+            grid-template-rows: 60px 1fr 60px;
+            gap: 8px;
+            align-items: center;
+            justify-items: center;
+        }
+        .cpu-photo {
+            grid-column: 2;
+            grid-row: 2;
+            width: 160px;
+            height: 160px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+        }
+        .cpu-photo img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+        .cpu-photo-placeholder {
+            font-size: 3rem;
+            opacity: 0.4;
+        }
+
+        /* Иконки */
+        .icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(145deg, rgba(0,255,157,0.12), rgba(0,198,255,0.08));
+            border: 1px solid rgba(0,255,157,0.25);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: default;
+        }
+        .icon:hover {
+            transform: scale(1.12);
+            box-shadow: 0 0 15px rgba(0,255,157,0.25);
+        }
+        .icon-emoji { font-size: 1.1rem; margin-bottom: 2px; }
+        .icon-value { font-weight: 600; color: #00ff9d; font-size: 0.72rem; text-align: center; line-height: 1.1; }
+
+        /* Позиции иконок */
+        .icon-top-1 { grid-column: 1; grid-row: 1; }
+        .icon-top-2 { grid-column: 2; grid-row: 1; }
+        .icon-top-3 { grid-column: 3; grid-row: 1; }
+        .icon-right-1 { grid-column: 3; grid-row: 2; }
+        .icon-bottom-3 { grid-column: 3; grid-row: 3; }
+        .icon-bottom-2 { grid-column: 2; grid-row: 3; }
+        .icon-bottom-1 { grid-column: 1; grid-row: 3; }
+        .icon-left-1 { grid-column: 1; grid-row: 2; }
+
+        /* Правая часть — название + график */
+        .cpu-right {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 18px;
+        }
+        .cpu-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        .cpu-meta {
+            color: #aaa;
+            font-size: 0.95rem;
+        }
+        .chart-area {
+            margin-top: 10px;
+        }
+        .chart-label {
+            font-size: 0.85rem;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .bar-track {
+            background: rgba(255,255,255,0.08);
+            border-radius: 10px;
+            height: 28px;
+            position: relative;
+            overflow: hidden;
+        }
+        .bar-multi {
+            height: 100%;
+            background: linear-gradient(90deg, #00c6ff, #00ff9d);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.6s ease;
+        }
+        .bar-single {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: rgba(255,255,255,0.35);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.6s ease;
+        }
+        .bar-percent {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        /* Модальное окно поиска */
         .modal {
             display: none;
             position: fixed;
@@ -103,7 +247,7 @@
             align-items: center;
             margin-bottom: 20px;
         }
-        .modal-header h2 { font-size: 1.4rem; }
+        .modal-header h2 { font-size: 1.3rem; }
         .close-btn {
             background: none;
             border: none;
@@ -134,22 +278,36 @@
             transition: background 0.15s;
         }
         .search-item:hover { background: rgba(0,255,157,0.1); }
+
+        @media (max-width: 800px) {
+            .cpu-card {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>CPU Disco</h1>
-        <p class="subtitle">Умный инструмент сравнения процессоров</p>
-
-        <div class="top-bar">
-            <button class="add-btn" onclick="openModal()">+ Добавить процессор</button>
-            <button class="clear-btn" onclick="clearAll()" id="clearBtn" style="display:none;">Очистить всё</button>
+        <div class="header">
+            <h1>CPU Disco</h1>
+            <div class="top-controls">
+                <select class="benchmark-select" id="benchmarkSelect" onchange="updateCharts()">
+                    <option value="overall_score">Общий рейтинг</option>
+                    <option value="cinebench_r23_multi">Cinebench R23 Multi</option>
+                    <option value="cinebench_r23_single">Cinebench R23 Single</option>
+                    <option value="geekbench6_multi">Geekbench 6 Multi</option>
+                    <option value="geekbench6_single">Geekbench 6 Single</option>
+                    <option value="passmark">PassMark</option>
+                </select>
+                <button class="add-btn" onclick="openModal()">+ Добавить</button>
+                <button class="clear-btn" onclick="clearAll()" id="clearBtn" style="display:none;">Очистить</button>
+            </div>
         </div>
 
         <div class="empty-state" id="emptyState">
             <span>🔍</span>
             <p>Список сравнения пуст</p>
-            <p style="margin-top: 8px; font-size: 0.95rem;">Нажмите «Добавить процессор», чтобы начать</p>
+            <p style="margin-top: 8px; font-size: 0.95rem;">Нажмите «Добавить», чтобы начать</p>
         </div>
 
         <div id="comparisonList"></div>
@@ -184,41 +342,34 @@
         async function searchProcessors() {
             const query = document.getElementById('searchInput').value.trim();
             const resultsDiv = document.getElementById('searchResults');
-
             if (query.length < 2) {
                 resultsDiv.innerHTML = '';
                 return;
             }
-
             resultsDiv.innerHTML = '<div class="search-item">Ищем...</div>';
-
             try {
                 const response = await fetch(`/api/search/?q=${encodeURIComponent(query)}`);
                 const data = await response.json();
-
                 if (data.results.length === 0) {
                     resultsDiv.innerHTML = '<div class="search-item">Ничего не найдено</div>';
                     return;
                 }
-
                 resultsDiv.innerHTML = data.results.map(cpu => `
                     <div class="search-item" onclick='addProcessor(${JSON.stringify(cpu)})'>
                         <strong>${cpu.name}</strong><br>
                         <small style="color:#aaa">${cpu.manufacturer} · ${cpu.cores || '?'} ядер · ${cpu.release_year || ''}</small>
                     </div>
                 `).join('');
-            } catch (error) {
+            } catch (e) {
                 resultsDiv.innerHTML = '<div class="search-item">Ошибка поиска</div>';
             }
         }
 
         function addProcessor(cpu) {
-            // Не добавляем дубликаты
             if (selectedCPUs.find(c => c.id === cpu.id)) {
                 closeModal();
                 return;
             }
-
             selectedCPUs.push(cpu);
             renderList();
             closeModal();
@@ -234,10 +385,29 @@
             renderList();
         }
 
+        function getScore(cpu, key) {
+            // Пока у нас в поиске мало данных, поэтому ставим заглушки
+            // Позже подключим полные данные из API
+            const map = {
+                overall_score: cpu.overall_score || 0,
+                cinebench_r23_multi: cpu.cinebench_r23_multi || 0,
+                cinebench_r23_single: cpu.cinebench_r23_single || 0,
+                geekbench6_multi: cpu.geekbench6_multi || 0,
+                geekbench6_single: cpu.geekbench6_single || 0,
+                passmark: cpu.passmark || 0
+            };
+            return map[key] || 0;
+        }
+
+        function updateCharts() {
+            renderList();
+        }
+
         function renderList() {
             const list = document.getElementById('comparisonList');
             const empty = document.getElementById('emptyState');
             const clearBtn = document.getElementById('clearBtn');
+            const benchKey = document.getElementById('benchmarkSelect').value;
 
             if (selectedCPUs.length === 0) {
                 list.innerHTML = '';
@@ -249,20 +419,90 @@
             empty.style.display = 'none';
             clearBtn.style.display = 'inline-block';
 
-            list.innerHTML = selectedCPUs.map(cpu => `
+            // Считаем максимальный результат
+            let maxScore = 0;
+            selectedCPUs.forEach(cpu => {
+                const s = getScore(cpu, benchKey);
+                if (s > maxScore) maxScore = s;
+            });
+
+            // Сортируем по убыванию
+            const sorted = [...selectedCPUs].sort((a, b) => getScore(b, benchKey) - getScore(a, benchKey));
+
+            list.innerHTML = sorted.map(cpu => {
+                const score = getScore(cpu, benchKey);
+                const percent = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+
+                return `
                 <div class="cpu-card">
-                    <div class="cpu-info">
-                        <h3>${cpu.name}</h3>
-                        <div class="cpu-meta">
-                            ${cpu.manufacturer} · ${cpu.cores || '?'} ядер / ${cpu.threads || '?'} потоков · ${cpu.release_year || ''}
+                    <button class="remove-btn" onclick="removeProcessor(${cpu.id})">×</button>
+
+                    <div class="cpu-visual">
+                        <!-- Верхний ряд -->
+                        <div class="icon icon-top-1">
+                            <div class="icon-emoji">📅</div>
+                            <div class="icon-value">${cpu.release_year || '—'}</div>
+                        </div>
+                        <div class="icon icon-top-2">
+                            <div class="icon-emoji">⚙️</div>
+                            <div class="icon-value">—</div>
+                        </div>
+                        <div class="icon icon-top-3">
+                            <div class="icon-emoji">⚡</div>
+                            <div class="icon-value">—</div>
+                        </div>
+
+                        <!-- Левая -->
+                        <div class="icon icon-left-1">
+                            <div class="icon-emoji">🔌</div>
+                            <div class="icon-value">—</div>
+                        </div>
+
+                        <!-- Фото -->
+                        <div class="cpu-photo">
+                            <div class="cpu-photo-placeholder">🖥️</div>
+                        </div>
+
+                        <!-- Правая -->
+                        <div class="icon icon-right-1">
+                            <div class="icon-emoji">🧠</div>
+                            <div class="icon-value">${cpu.cores || '?'}/${cpu.threads || '?'}</div>
+                        </div>
+
+                        <!-- Нижний ряд -->
+                        <div class="icon icon-bottom-1">
+                            <div class="icon-emoji">🌡️</div>
+                            <div class="icon-value">—</div>
+                        </div>
+                        <div class="icon icon-bottom-2">
+                            <div class="icon-emoji">💾</div>
+                            <div class="icon-value">—</div>
+                        </div>
+                        <div class="icon icon-bottom-3">
+                            <div class="icon-emoji">⋯</div>
+                            <div class="icon-value">ещё</div>
                         </div>
                     </div>
-                    <button class="remove-btn" onclick="removeProcessor(${cpu.id})">×</button>
+
+                    <div class="cpu-right">
+                        <div>
+                            <div class="cpu-name">${cpu.name}</div>
+                            <div class="cpu-meta">${cpu.manufacturer} · ${cpu.cores || '?'} ядер / ${cpu.threads || '?'} потоков</div>
+                        </div>
+                        <div class="chart-area">
+                            <div class="chart-label">Производительность</div>
+                            <div class="bar-track">
+                                <div class="bar-multi" style="width: ${percent}%"></div>
+                                <div class="bar-single" style="width: ${Math.round(percent * 0.55)}%"></div>
+                                <div class="bar-percent">${percent}%</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
-        // Закрытие по клику вне окна
         document.getElementById('searchModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
