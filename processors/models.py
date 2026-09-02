@@ -1,8 +1,10 @@
 from django.db import models
 
+
 class Processor(models.Model):
     # === Основная информация ===
     name = models.CharField("Название", max_length=200, unique=True)
+    slug = models.SlugField("Slug", max_length=220, unique=True, blank=True, null=True)
     manufacturer = models.CharField("Производитель", max_length=50, choices=[
         ('Intel', 'Intel'),
         ('AMD', 'AMD'),
@@ -17,6 +19,7 @@ class Processor(models.Model):
         ('Desktop', 'Десктопный'),
         ('Mobile', 'Мобильный'),
         ('Server', 'Серверный'),
+        ('Embedded', 'Встраиваемый'),
         ('Other', 'Другой'),
     ], blank=True)
     image = models.URLField("Ссылка на изображение", blank=True, null=True)
@@ -46,16 +49,17 @@ class Processor(models.Model):
     max_temp = models.PositiveIntegerField("Макс. температура (°C)", null=True, blank=True)
 
     # === Сокет и шина ===
-    socket = models.CharField("Сокет", max_length=50, blank=True)
+    socket = models.CharField("Сокет", max_length=80, blank=True)
     bus = models.CharField("Шина", max_length=100, blank=True)
 
     # === Графика ===
-    integrated_graphics = models.BooleanField("Встроенная графика", default=False)
+    # В JSON приходит строка: "нет" / "Intel UHD Graphics 730" и т.п.
+    integrated_graphics = models.BooleanField("Есть iGPU", default=False)
     igpu_name = models.CharField("Название iGPU", max_length=150, blank=True)
 
     # === Память и PCIe ===
-    memory_support = models.CharField("Поддержка памяти (RAM)", max_length=200, blank=True)
-    pcie = models.CharField("PCIe", max_length=100, blank=True)
+    memory_support = models.CharField("Поддержка памяти (RAM)", max_length=250, blank=True)
+    pcie = models.CharField("PCIe", max_length=120, blank=True)
 
     # === Прочее ===
     integrated_modules = models.TextField("Встроенные модули", blank=True)
@@ -63,27 +67,54 @@ class Processor(models.Model):
     other_features = models.TextField("Другие особенности", blank=True)
     release_year = models.PositiveIntegerField("Год выхода", null=True, blank=True)
 
-    # === БЕНЧМАРКИ ===
+    # === БЕНЧМАРКИ (то, что реально спарсили) ===
     overall_score = models.PositiveIntegerField("Общий рейтинг", null=True, blank=True)
     overall_score_approx = models.BooleanField("Общий рейтинг приблизительный", default=False)
 
-    cinebench_r23_single = models.PositiveIntegerField("Cinebench R23 Single", null=True, blank=True)
-    cinebench_r23_single_approx = models.BooleanField("Cinebench R23 Single приблизительный", default=False)
-    cinebench_r23_multi = models.PositiveIntegerField("Cinebench R23 Multi", null=True, blank=True)
-    cinebench_r23_multi_approx = models.BooleanField("Cinebench R23 Multi приблизительный", default=False)
-
-    cinebench_2024_single = models.PositiveIntegerField("Cinebench 2024 Single", null=True, blank=True)
-    cinebench_2024_single_approx = models.BooleanField("Cinebench 2024 Single приблизительный", default=False)
-    cinebench_2024_multi = models.PositiveIntegerField("Cinebench 2024 Multi", null=True, blank=True)
-    cinebench_2024_multi_approx = models.BooleanField("Cinebench 2024 Multi приблизительный", default=False)
-
-    geekbench6_single = models.PositiveIntegerField("Geekbench 6 Single", null=True, blank=True)
-    geekbench6_single_approx = models.BooleanField("Geekbench 6 Single приблизительный", default=False)
-    geekbench6_multi = models.PositiveIntegerField("Geekbench 6 Multi", null=True, blank=True)
-    geekbench6_multi_approx = models.BooleanField("Geekbench 6 Multi приблизительный", default=False)
-
     passmark = models.PositiveIntegerField("PassMark", null=True, blank=True)
     passmark_approx = models.BooleanField("PassMark приблизительный", default=False)
+
+    geekbench4_single = models.FloatField("Geekbench 4 Single", null=True, blank=True)
+    geekbench4_single_approx = models.BooleanField("Geekbench 4 Single приблизительный", default=False)
+    geekbench4_multi = models.FloatField("Geekbench 4 Multi", null=True, blank=True)
+    geekbench4_multi_approx = models.BooleanField("Geekbench 4 Multi приблизительный", default=False)
+
+    cinebench_r15_single = models.FloatField("Cinebench R15 Single", null=True, blank=True)
+    cinebench_r15_single_approx = models.BooleanField("Cinebench R15 Single приблизительный", default=False)
+    cinebench_r15_multi = models.FloatField("Cinebench R15 Multi", null=True, blank=True)
+    cinebench_r15_multi_approx = models.BooleanField("Cinebench R15 Multi приблизительный", default=False)
+
+    cinebench_r11_single = models.FloatField("Cinebench R11.5 Single", null=True, blank=True)
+    cinebench_r11_single_approx = models.BooleanField("Cinebench R11.5 Single приблизительный", default=False)
+    cinebench_r11_multi = models.FloatField("Cinebench R11.5 Multi", null=True, blank=True)
+    cinebench_r11_multi_approx = models.BooleanField("Cinebench R11.5 Multi приблизительный", default=False)
+
+    threedmark06_cpu = models.FloatField("3DMark06 CPU", null=True, blank=True)
+    threedmark06_cpu_approx = models.BooleanField("3DMark06 CPU приблизительный", default=False)
+
+    winrar = models.FloatField("WinRAR", null=True, blank=True)
+    winrar_approx = models.BooleanField("WinRAR приблизительный", default=False)
+
+    x264_pass1 = models.FloatField("x264 Pass 1", null=True, blank=True)
+    x264_pass1_approx = models.BooleanField("x264 Pass 1 приблизительный", default=False)
+    x264_pass2 = models.FloatField("x264 Pass 2", null=True, blank=True)
+    x264_pass2_approx = models.BooleanField("x264 Pass 2 приблизительный", default=False)
+
+    # === На будущее (пока пустые, можно заполнить позже) ===
+    cinebench_r23_single = models.PositiveIntegerField("Cinebench R23 Single", null=True, blank=True)
+    cinebench_r23_single_approx = models.BooleanField(default=False)
+    cinebench_r23_multi = models.PositiveIntegerField("Cinebench R23 Multi", null=True, blank=True)
+    cinebench_r23_multi_approx = models.BooleanField(default=False)
+
+    cinebench_2024_single = models.PositiveIntegerField("Cinebench 2024 Single", null=True, blank=True)
+    cinebench_2024_single_approx = models.BooleanField(default=False)
+    cinebench_2024_multi = models.PositiveIntegerField("Cinebench 2024 Multi", null=True, blank=True)
+    cinebench_2024_multi_approx = models.BooleanField(default=False)
+
+    geekbench6_single = models.PositiveIntegerField("Geekbench 6 Single", null=True, blank=True)
+    geekbench6_single_approx = models.BooleanField(default=False)
+    geekbench6_multi = models.PositiveIntegerField("Geekbench 6 Multi", null=True, blank=True)
+    geekbench6_multi_approx = models.BooleanField(default=False)
 
     # === Служебные ===
     notes = models.TextField("Заметки", blank=True)
