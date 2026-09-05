@@ -3,509 +3,713 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CPU Disco — Сравнение процессоров</title>
+    <title>CPU Compare</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: system-ui, -apple-system, sans-serif;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
             background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            color: #fff;
+            color: #E8EEF8;
             min-height: 100vh;
-            padding: 30px 20px;
         }
-        .container { max-width: 1200px; margin: 0 auto; }
 
-        /* Шапка */
-        .header {
+        .topbar {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-        h1 {
-            font-size: 2.2rem;
-            background: linear-gradient(90deg, #00ff9d, #00c6ff);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .top-controls {
-            display: flex;
             gap: 12px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .add-btn, .clear-btn {
-            border: none;
-            padding: 11px 20px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        .add-btn {
-            background: linear-gradient(90deg, #00ff9d, #00c6ff);
-            color: #000;
-        }
-        .clear-btn {
-            background: rgba(255,255,255,0.08);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.15);
-        }
-        .add-btn:hover, .clear-btn:hover { transform: scale(1.03); }
-
-        .benchmark-select {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.15);
-            color: #fff;
-            padding: 10px 14px;
-            border-radius: 10px;
-            font-size: 0.95rem;
-            outline: none;
-        }
-
-        /* Пустое состояние */
-        .empty-state {
-            margin-top: 80px;
-            text-align: center;
-            color: #777;
-        }
-        .empty-state span { font-size: 3rem; display: block; margin-bottom: 15px; }
-
-        /* Карточка процессора */
-        .cpu-card {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 20px;
-            padding: 25px;
-            margin-bottom: 25px;
-            display: grid;
-            grid-template-columns: 340px 1fr;
-            gap: 30px;
-            position: relative;
-        }
-        .remove-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            color: #ff6b6b;
-            font-size: 1.5rem;
-            cursor: pointer;
-            z-index: 5;
-        }
-
-        /* Левая часть — фото + иконки */
-        .cpu-visual {
-            position: relative;
-            width: 280px;
-            height: 280px;
+            padding: 16px 20px;
+            max-width: 960px;
             margin: 0 auto;
         }
-        .cpu-photo {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 170px;
-            height: 170px;
-            background: rgba(255,255,255,0.06);
-            border-radius: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid rgba(255,255,255,0.12);
-            overflow: hidden;
-            z-index: 2;
-        }
-        .cpu-photo img {
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-        }
-        .cpu-photo-placeholder {
-            font-size: 3.2rem;
-            opacity: 0.35;
-        }
 
-        /* Иконки — кругом вокруг фото */
-        .icon {
-            position: absolute;
-            width: 58px;
-            height: 58px;
-            background: linear-gradient(145deg, rgba(15,20,50,0.95), rgba(30,35,70,0.95));
-            border: 1px solid rgba(0,255,157,0.35);
-            border-radius: 14px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.68rem;
-            transition: transform 0.2s, box-shadow 0.2s;
-            z-index: 3;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-        }
-        .icon:hover {
-            transform: scale(1.15);
-            box-shadow: 0 0 18px rgba(0,255,157,0.35);
-            z-index: 10;
-        }
-        .icon-emoji { font-size: 1.05rem; margin-bottom: 1px; }
-        .icon-value { font-weight: 600; color: #00ff9d; font-size: 0.7rem; text-align: center; line-height: 1.1; }
-
-        /* Позиции иконок (чуть налегают на фото) */
-        .icon-top-1    { top: 8px;   left: 28px; }
-        .icon-top-2    { top: 0;     left: 111px; }
-        .icon-top-3    { top: 8px;   right: 28px; }
-        .icon-right-1  { top: 111px; right: 0; }
-        .icon-bottom-3 { bottom: 8px; right: 28px; }
-        .icon-bottom-2 { bottom: 0;   left: 111px; }
-        .icon-bottom-1 { bottom: 8px; left: 28px; }
-        .icon-left-1   { top: 111px; left: 0; }
-
-        /* Правая часть — название + график */
-        .cpu-right {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 18px;
-        }
-        .cpu-name {
-            font-size: 1.5rem;
+        .logo {
+            font-size: 20px;
             font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #7EE0FF;
         }
-        .cpu-meta {
-            color: #aaa;
-            font-size: 0.95rem;
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
-        .chart-area {
-            margin-top: 10px;
+
+        select, button {
+            font: inherit;
         }
-        .chart-label {
-            font-size: 0.85rem;
-            color: #888;
-            margin-bottom: 8px;
-        }
-        .bar-track {
-            background: rgba(255,255,255,0.08);
+
+        #benchSelect {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.12);
+            color: #E8EEF8;
             border-radius: 10px;
-            height: 28px;
+            padding: 8px 12px;
+            min-width: 180px;
+        }
+
+        #benchSelect option {
+            color: #111;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 10px;
+            padding: 8px 14px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-add {
+            background: linear-gradient(90deg, #1BB8FF, #2EE6A8);
+            color: #0b1220;
+        }
+
+        .btn-clear {
+            background: rgba(255,255,255,0.08);
+            color: #D5DEF0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn:hover { filter: brightness(1.08); }
+
+        .empty {
+            max-width: 960px;
+            margin: 40px auto;
+            text-align: center;
+            color: #8B9BB4;
+            padding: 0 16px;
+        }
+
+        .compare-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 8px 16px 48px;
+        }
+
+        /* ===== Card ===== */
+        .cpu-card {
             position: relative;
+            display: grid;
+            grid-template-columns: 132px 1fr;
+            grid-template-rows: auto auto;
+            gap: 14px 18px;
+            padding: 18px 18px 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.045);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .cpu-card:hover {
+            border-color: rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .cpu-card .remove {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            color: #8B9BB4;
+            font-size: 18px;
+            line-height: 1;
+            cursor: pointer;
+        }
+
+        .cpu-card .remove:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .cpu-sil {
+            grid-row: 1;
+            grid-column: 1;
+            width: 132px;
+            height: 132px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: linear-gradient(160deg, #1a2235, #121826);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+
+        .cpu-sil.amd   { box-shadow: inset 0 0 0 1px rgba(220, 60, 60, 0.25); }
+        .cpu-sil.intel { box-shadow: inset 0 0 0 1px rgba(60, 120, 220, 0.25); }
+        .cpu-sil.apple { box-shadow: inset 0 0 0 1px rgba(180, 180, 190, 0.25); }
+        .cpu-sil.other { box-shadow: inset 0 0 0 1px rgba(140, 100, 220, 0.2); }
+
+        .cpu-sil-shape {
+            width: 78px;
+            height: 78px;
+            border-radius: 8px;
+            background: linear-gradient(145deg, #2a3348, #1c2436);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow:
+                0 8px 18px rgba(0, 0, 0, 0.35),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            position: relative;
+        }
+
+        .cpu-sil-shape::after {
+            content: "";
+            position: absolute;
+            left: 12%;
+            right: 12%;
+            bottom: 7px;
+            height: 6px;
+            border-radius: 2px;
+            background: rgba(0, 0, 0, 0.35);
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .cpu-sil-socket {
+            position: absolute;
+            bottom: 8px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 10px;
+            letter-spacing: 0.04em;
+            color: #8B9BB4;
+            text-transform: uppercase;
+        }
+
+        .cpu-main {
+            grid-row: 1;
+            grid-column: 2;
+            padding-right: 28px;
+            min-width: 0;
+        }
+
+        .cpu-name {
+            margin: 0 0 4px;
+            font-size: 18px;
+            font-weight: 650;
+            letter-spacing: -0.01em;
+            color: #E8EEF8;
+            line-height: 1.25;
+        }
+
+        .cpu-meta {
+            margin: 0 0 14px;
+            font-size: 13px;
+            color: #8B9BB4;
+        }
+
+        .cpu-meta strong {
+            color: #B7C4D8;
+            font-weight: 500;
+        }
+
+        .bars {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .bar-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .bar-track {
+            position: relative;
+            height: 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
             overflow: hidden;
         }
+
         .bar-multi {
-            height: 100%;
-            background: linear-gradient(90deg, #00c6ff, #00ff9d);
-            border-radius: 10px;
-            width: 0%;
-            transition: width 0.6s ease;
+            position: absolute;
+            inset: 0 auto 0 0;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #1BB8FF, #2EE6A8);
         }
+
         .bar-single {
             position: absolute;
-            top: 0;
+            top: 2px;
+            bottom: 2px;
             left: 0;
-            height: 100%;
-            background: rgba(255,255,255,0.35);
-            border-radius: 10px;
-            width: 0%;
-            transition: width 0.6s ease;
-        }
-        .bar-percent {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #fff;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+            border-radius: 999px;
+            background: #FFD36E;
+            opacity: 0.9;
         }
 
-        /* Модальное окно поиска */
+        .bar-pct {
+            font-size: 13px;
+            font-weight: 600;
+            color: #E8EEF8;
+            min-width: 48px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .bar-pct .approx {
+            margin-left: 3px;
+            color: #C9A24A;
+            font-weight: 700;
+        }
+
+        .bar-label {
+            font-size: 11px;
+            color: #7E8FA8;
+        }
+
+        .cpu-strip {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px 0;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .strip-item {
+            flex: 1 1 0;
+            min-width: 72px;
+            padding: 0 8px;
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .strip-item:last-child { border-right: none; }
+
+        .strip-label {
+            display: block;
+            font-size: 10px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #6E7F99;
+            margin-bottom: 3px;
+        }
+
+        .strip-value {
+            display: block;
+            font-size: 13px;
+            font-weight: 560;
+            color: #D5DEF0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .strip-item.more {
+            flex: 0 0 auto;
+            min-width: 44px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .strip-more-btn {
+            width: 34px;
+            height: 28px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.03);
+            color: #A9B7CC;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+
+        .strip-more-btn:hover {
+            color: #fff;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Modal */
         .modal {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 100;
-            justify-content: center;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 50;
             align-items: flex-start;
-            padding-top: 80px;
+            justify-content: center;
+            padding: 80px 16px 16px;
         }
-        .modal.active { display: flex; }
-        .modal-content {
-            background: #1a1a2e;
-            border-radius: 16px;
+
+        .modal.open { display: flex; }
+
+        .modal-box {
             width: 100%;
-            max-width: 500px;
-            padding: 25px;
+            max-width: 480px;
+            background: #1a1f35;
             border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 16px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
         }
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        .modal-header h2 { font-size: 1.3rem; }
-        .close-btn {
-            background: none;
-            border: none;
-            color: #aaa;
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-        .search-input {
+
+        .modal-box input {
             width: 100%;
-            padding: 14px 16px;
+            padding: 12px 14px;
             border-radius: 10px;
-            border: 1px solid rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.12);
             background: rgba(255,255,255,0.05);
             color: #fff;
-            font-size: 1rem;
+            font-size: 15px;
             outline: none;
         }
-        .search-input:focus { border-color: #00ff9d; }
-        .search-results {
-            margin-top: 15px;
-            max-height: 300px;
+
+        .modal-box input:focus {
+            border-color: #1BB8FF;
+        }
+
+        #searchResults {
+            margin-top: 10px;
+            max-height: 320px;
             overflow-y: auto;
         }
+
         .search-item {
-            padding: 12px 15px;
+            padding: 10px 12px;
             border-radius: 8px;
             cursor: pointer;
-            transition: background 0.15s;
         }
-        .search-item:hover { background: rgba(0,255,157,0.1); }
 
-        @media (max-width: 800px) {
+        .search-item:hover {
+            background: rgba(255,255,255,0.06);
+        }
+
+        .search-item small {
+            color: #8B9BB4;
+        }
+
+        @media (max-width: 640px) {
             .cpu-card {
-                grid-template-columns: 1fr;
+                grid-template-columns: 96px 1fr;
+                gap: 12px;
+                padding: 14px 12px 12px;
             }
+            .cpu-sil { width: 96px; height: 96px; }
+            .cpu-sil-shape { width: 56px; height: 56px; }
+            .cpu-name { font-size: 16px; }
+            .strip-item { min-width: 30%; border-right: none; margin-bottom: 8px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>CPU Disco</h1>
-            <div class="top-controls">
-                <select class="benchmark-select" id="benchmarkSelect" onchange="updateCharts()">
-                    <option value="overall_score">Общий рейтинг</option>
-                    <option value="cinebench_r23_multi">Cinebench R23 Multi</option>
-                    <option value="cinebench_r23_single">Cinebench R23 Single</option>
-                    <option value="geekbench6_multi">Geekbench 6 Multi</option>
-                    <option value="geekbench6_single">Geekbench 6 Single</option>
-                    <option value="passmark">PassMark</option>
-                </select>
-                <button class="add-btn" onclick="openModal()">+ Добавить</button>
-                <button class="clear-btn" onclick="clearAll()" id="clearBtn" style="display:none;">Очистить</button>
-            </div>
+    <div class="topbar">
+        <div class="logo">CPU Compare</div>
+        <div class="top-actions">
+            <select id="benchSelect">
+                <option value="overall_score">Общий рейтинг</option>
+                <option value="passmark">PassMark</option>
+                <option value="geekbench4_multi">Geekbench 4 Multi</option>
+                <option value="geekbench4_single">Geekbench 4 Single</option>
+                <option value="cinebench_r15_multi">Cinebench R15 Multi</option>
+                <option value="cinebench_r15_single">Cinebench R15 Single</option>
+                <option value="cinebench_r11_multi">Cinebench R11 Multi</option>
+                <option value="cinebench_r11_single">Cinebench R11 Single</option>
+                <option value="threedmark06_cpu">3DMark06 CPU</option>
+                <option value="winrar">WinRAR</option>
+                <option value="x264_pass1">x264 Pass 1</option>
+                <option value="x264_pass2">x264 Pass 2</option>
+            </select>
+            <button class="btn btn-add" onclick="openModal()">+ Добавить</button>
+            <button class="btn btn-clear" onclick="clearAll()">Очистить</button>
         </div>
-
-        <div class="empty-state" id="emptyState">
-            <span>🔍</span>
-            <p>Список сравнения пуст</p>
-            <p style="margin-top: 8px; font-size: 0.95rem;">Нажмите «Добавить», чтобы начать</p>
-        </div>
-
-        <div id="comparisonList"></div>
     </div>
 
-    <!-- Модальное окно поиска -->
+    <div id="emptyState" class="empty">
+        Добавь 2–3 процессора через «+ Добавить», чтобы сравнить их.
+    </div>
+
+    <div class="compare-list" id="compareList"></div>
+
     <div class="modal" id="searchModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Добавить процессор</h2>
-                <button class="close-btn" onclick="closeModal()">×</button>
-            </div>
-            <input type="text" class="search-input" id="searchInput" placeholder="Начните вводить название..." oninput="searchProcessors()">
-            <div class="search-results" id="searchResults"></div>
+        <div class="modal-box">
+            <input id="searchInput" type="text" placeholder="Название процессора..." autocomplete="off">
+            <div id="searchResults"></div>
         </div>
     </div>
 
     <script>
-        let selectedCPUs = [];
+        // selected: [{id, data}]
+        let selected = [];
+
+        const BENCH_LABELS = {
+            overall_score: 'Общий рейтинг',
+            passmark: 'PassMark',
+            geekbench4_multi: 'Geekbench 4 Multi',
+            geekbench4_single: 'Geekbench 4 Single',
+            cinebench_r15_multi: 'Cinebench R15 Multi',
+            cinebench_r15_single: 'Cinebench R15 Single',
+            cinebench_r11_multi: 'Cinebench R11 Multi',
+            cinebench_r11_single: 'Cinebench R11 Single',
+            threedmark06_cpu: '3DMark06 CPU',
+            winrar: 'WinRAR',
+            x264_pass1: 'x264 Pass 1',
+            x264_pass2: 'x264 Pass 2',
+        };
+
+        // Для overall можно поверх показать single, если выберешь multi-бенч
+        const SINGLE_PAIR = {
+            geekbench4_multi: 'geekbench4_single',
+            cinebench_r15_multi: 'cinebench_r15_single',
+            cinebench_r11_multi: 'cinebench_r11_single',
+        };
 
         function openModal() {
-            document.getElementById('searchModal').classList.add('active');
-            document.getElementById('searchInput').focus();
+            document.getElementById('searchModal').classList.add('open');
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            document.getElementById('searchResults').innerHTML = '';
+            setTimeout(() => input.focus(), 50);
         }
 
         function closeModal() {
-            document.getElementById('searchModal').classList.remove('active');
-            document.getElementById('searchInput').value = '';
-            document.getElementById('searchResults').innerHTML = '';
+            document.getElementById('searchModal').classList.remove('open');
         }
 
-        async function searchProcessors() {
-            const query = document.getElementById('searchInput').value.trim();
-            const resultsDiv = document.getElementById('searchResults');
-            if (query.length < 2) {
-                resultsDiv.innerHTML = '';
+        document.getElementById('searchModal').addEventListener('click', (e) => {
+            if (e.target.id === 'searchModal') closeModal();
+        });
+
+        let searchTimer = null;
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            clearTimeout(searchTimer);
+            const q = e.target.value.trim();
+            const box = document.getElementById('searchResults');
+            if (q.length < 2) {
+                box.innerHTML = '';
                 return;
             }
-            resultsDiv.innerHTML = '<div class="search-item">Ищем...</div>';
+            box.innerHTML = '<div class="search-item">Ищем...</div>';
+            searchTimer = setTimeout(() => doSearch(q), 250);
+        });
+
+        async function doSearch(q) {
+            const box = document.getElementById('searchResults');
             try {
-                const response = await fetch(`/api/search/?q=${encodeURIComponent(query)}`);
-                const data = await response.json();
-                if (data.results.length === 0) {
-                    resultsDiv.innerHTML = '<div class="search-item">Ничего не найдено</div>';
+                const res = await fetch(`/api/search/?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+                if (!data.results.length) {
+                    box.innerHTML = '<div class="search-item">Ничего не найдено</div>';
                     return;
                 }
-                resultsDiv.innerHTML = data.results.map(cpu => `
-                    <div class="search-item" onclick='addProcessor(${JSON.stringify(cpu)})'>
-                        <strong>${cpu.name}</strong><br>
-                        <small style="color:#aaa">${cpu.manufacturer} · ${cpu.cores || '?'} ядер · ${cpu.release_year || ''}</small>
+                box.innerHTML = data.results.map(cpu => `
+                    <div class="search-item" onclick="addProcessor(${cpu.id})">
+                        <strong>${escapeHtml(cpu.name)}</strong><br>
+                        <small>${escapeHtml(cpu.manufacturer || '')} · ${cpu.cores || '?'} ядер · ${cpu.release_year || ''}</small>
                     </div>
                 `).join('');
-            } catch (e) {
-                resultsDiv.innerHTML = '<div class="search-item">Ошибка поиска</div>';
+            } catch (err) {
+                box.innerHTML = '<div class="search-item">Ошибка поиска</div>';
             }
         }
 
-        function addProcessor(cpu) {
-            if (selectedCPUs.find(c => c.id === cpu.id)) {
+        async function addProcessor(id) {
+            if (selected.some(x => x.id === id)) {
                 closeModal();
                 return;
             }
-            selectedCPUs.push(cpu);
-            renderList();
-            closeModal();
+            try {
+                const res = await fetch(`/api/processor/${id}/`);
+                if (!res.ok) throw new Error('fail');
+                const data = await res.json();
+                selected.push({ id, data });
+                closeModal();
+                render();
+            } catch (e) {
+                alert('Не удалось загрузить процессор');
+            }
         }
 
         function removeProcessor(id) {
-            selectedCPUs = selectedCPUs.filter(c => c.id !== id);
-            renderList();
+            selected = selected.filter(x => x.id !== id);
+            render();
         }
 
         function clearAll() {
-            selectedCPUs = [];
-            renderList();
+            selected = [];
+            render();
         }
 
-        function getScore(cpu, key) {
-            // Пока у нас в поиске мало данных, поэтому ставим заглушки
-            // Позже подключим полные данные из API
+        document.getElementById('benchSelect').addEventListener('change', render);
+
+        function vendorClass(m) {
+            m = (m || '').toLowerCase();
+            if (m.includes('amd')) return 'amd';
+            if (m.includes('intel')) return 'intel';
+            if (m.includes('apple')) return 'apple';
+            return 'other';
+        }
+
+        function fmtClock(base, boost) {
+            if (base == null && boost == null) return '—';
+            if (base != null && boost != null) return `${base}–${boost}`;
+            return String(base ?? boost);
+        }
+
+        function shortMemory(mem) {
+            if (!mem) return '—';
+            const m = String(mem).match(/DDR\d/gi);
+            return m ? [...new Set(m.map(x => x.toUpperCase()))].join('/') : '—';
+        }
+
+        function igpuText(cpu) {
+            if (cpu.igpu_name) return cpu.igpu_name;
+            if (cpu.integrated_graphics) return 'есть';
+            return '—';
+        }
+
+        function categoryText(c) {
             const map = {
-                overall_score: cpu.overall_score || 0,
-                cinebench_r23_multi: cpu.cinebench_r23_multi || 0,
-                cinebench_r23_single: cpu.cinebench_r23_single || 0,
-                geekbench6_multi: cpu.geekbench6_multi || 0,
-                geekbench6_single: cpu.geekbench6_single || 0,
-                passmark: cpu.passmark || 0
+                Desktop: 'Desktop',
+                Mobile: 'Mobile',
+                Server: 'Server',
+                Embedded: 'Embedded',
             };
-            return map[key] || 0;
+            return map[c] || c || '';
         }
 
-        function updateCharts() {
-            renderList();
+        function escapeHtml(s) {
+            return String(s)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;');
         }
 
-        function renderList() {
-            const list = document.getElementById('comparisonList');
+        function getBench(cpu, key) {
+            const b = (cpu.benchmarks || {})[key];
+            if (!b || b.value == null) return null;
+            return b;
+        }
+
+        function render() {
+            const list = document.getElementById('compareList');
             const empty = document.getElementById('emptyState');
-            const clearBtn = document.getElementById('clearBtn');
-            const benchKey = document.getElementById('benchmarkSelect').value;
+            const benchKey = document.getElementById('benchSelect').value;
+            const singleKey = SINGLE_PAIR[benchKey] || null;
 
-            if (selectedCPUs.length === 0) {
+            if (!selected.length) {
                 list.innerHTML = '';
                 empty.style.display = 'block';
-                clearBtn.style.display = 'none';
                 return;
             }
-
             empty.style.display = 'none';
-            clearBtn.style.display = 'inline-block';
 
-            // Считаем максимальный результат
-            let maxScore = 0;
-            selectedCPUs.forEach(cpu => {
-                const s = getScore(cpu, benchKey);
-                if (s > maxScore) maxScore = s;
+            // max for current bench
+            let maxVal = 0;
+            selected.forEach(({ data }) => {
+                const b = getBench(data, benchKey);
+                if (b && b.value != null && b.value > maxVal) maxVal = b.value;
             });
 
-            // Сортируем по убыванию
-            const sorted = [...selectedCPUs].sort((a, b) => getScore(b, benchKey) - getScore(a, benchKey));
+            list.innerHTML = selected.map(({ id, data }) => {
+                const b = getBench(data, benchKey);
+                const s = singleKey ? getBench(data, singleKey) : null;
 
-            list.innerHTML = sorted.map(cpu => {
-                const score = getScore(cpu, benchKey);
-                const percent = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+                let multiPct = 0;
+                let singlePct = 0;
+                let approxMark = '';
+
+                if (b && maxVal > 0) {
+                    multiPct = Math.max(0, Math.min(100, (b.value / maxVal) * 100));
+                    if (b.approx) approxMark = '<span class="approx" title="Приблизительно">?</span>';
+                }
+                if (s && maxVal > 0) {
+                    singlePct = Math.max(0, Math.min(100, (s.value / maxVal) * 100));
+                }
+
+                const pctText = b && b.value != null
+                    ? `${Math.round(multiPct)}%${approxMark}`
+                    : `—`;
+
+                const vClass = vendorClass(data.manufacturer);
+                const socket = data.socket || '—';
 
                 return `
-                <div class="cpu-card">
-                    <button class="remove-btn" onclick="removeProcessor(${cpu.id})">×</button>
+                <article class="cpu-card" data-id="${id}">
+                    <button class="remove" title="Убрать" onclick="removeProcessor(${id})">×</button>
 
-                                        <div class="cpu-visual">
-                        <div class="icon icon-top-1">
-                            <div class="icon-emoji">📅</div>
-                            <div class="icon-value">${cpu.release_year || '—'}</div>
-                        </div>
-                        <div class="icon icon-top-2">
-                            <div class="icon-emoji">🔬</div>
-                            <div class="icon-value">${cpu.lithography || '—'}</div>
-                        </div>
-                        <div class="icon icon-top-3">
-                            <div class="icon-emoji">⚡</div>
-                            <div class="icon-value">${cpu.tdp ? cpu.tdp + 'W' : '—'}</div>
-                        </div>
-
-                        <div class="icon icon-left-1">
-                            <div class="icon-emoji">🔌</div>
-                            <div class="icon-value">${cpu.socket || '—'}</div>
-                        </div>
-
-                        <div class="cpu-photo">
-                            ${cpu.image 
-                                ? `<img src="${cpu.image}" alt="${cpu.name}">` 
-                                : `<div class="cpu-photo-placeholder">🖥️</div>`}
-                        </div>
-
-                        <div class="icon icon-right-1">
-                            <div class="icon-emoji">🧠</div>
-                            <div class="icon-value">${cpu.cores || '?'}/${cpu.threads || '?'}</div>
-                        </div>
-
-                        <div class="icon icon-bottom-1">
-                            <div class="icon-emoji">🌡️</div>
-                            <div class="icon-value">${cpu.max_temp ? cpu.max_temp + '°' : '—'}</div>
-                        </div>
-                        <div class="icon icon-bottom-2">
-                            <div class="icon-emoji">💾</div>
-                            <div class="icon-value">${cpu.memory_support ? cpu.memory_support.split(' ')[0] : '—'}</div>
-                        </div>
-                        <div class="icon icon-bottom-3">
-                            <div class="icon-emoji">⋯</div>
-                            <div class="icon-value">ещё</div>
-                        </div>
+                    <div class="cpu-sil ${vClass}">
+                        <div class="cpu-sil-shape"></div>
+                        <div class="cpu-sil-socket">${escapeHtml(socket.replace(/^Socket\s+/i, ''))}</div>
                     </div>
-                    <div class="cpu-right">
-                        <div>
-                            <div class="cpu-name">${cpu.name}</div>
-                            <div class="cpu-meta">${cpu.manufacturer} · ${cpu.cores || '?'} ядер / ${cpu.threads || '?'} потоков</div>
-                        </div>
-                        <div class="chart-area">
-                            <div class="chart-label">Производительность</div>
-                            <div class="bar-track">
-                                <div class="bar-multi" style="width: ${percent}%"></div>
-                                <div class="bar-single" style="width: ${Math.round(percent * 0.55)}%"></div>
-                                <div class="bar-percent">${percent}%</div>
+
+                    <div class="cpu-main">
+                        <h3 class="cpu-name">${escapeHtml(data.name)}</h3>
+                        <p class="cpu-meta">
+                            <strong>${escapeHtml(data.manufacturer || '')}</strong>
+                            ${data.category ? ' · ' + escapeHtml(categoryText(data.category)) : ''}
+                            · ${data.cores || '?'} ядер / ${data.threads || '?'} потоков
+                        </p>
+
+                        <div class="bars">
+                            <div class="bar-row">
+                                <div class="bar-track">
+                                    <div class="bar-multi" style="width:${multiPct}%"></div>
+                                    ${s && s.value != null ? `<div class="bar-single" style="width:${singlePct}%"></div>` : ''}
+                                </div>
+                                <div class="bar-pct">${pctText}</div>
                             </div>
+                            <div class="bar-label">${escapeHtml(BENCH_LABELS[benchKey] || benchKey)}</div>
                         </div>
                     </div>
-                </div>
-                `;
+
+                    <div class="cpu-strip">
+                        <div class="strip-item">
+                            <span class="strip-label">Год</span>
+                            <span class="strip-value">${data.release_year || '—'}</span>
+                        </div>
+                        <div class="strip-item">
+                            <span class="strip-label">Процесс</span>
+                            <span class="strip-value">${escapeHtml(data.lithography || '—')}</span>
+                        </div>
+                        <div class="strip-item">
+                            <span class="strip-label">TDP</span>
+                            <span class="strip-value">${data.tdp != null ? data.tdp + ' W' : '—'}</span>
+                        </div>
+                        <div class="strip-item">
+                            <span class="strip-label">Сокет</span>
+                            <span class="strip-value">${escapeHtml(socket)}</span>
+                        </div>
+                        <div class="strip-item">
+                            <span class="strip-label">Ядра</span>
+                            <span class="strip-value">${data.cores || '?'} / ${data.threads || '?'}</span>
+                        </div>
+                        <div class="strip-item">
+                            <span class="strip-label">Частота</span>
+                            <span class="strip-value">${fmtClock(data.base_clock, data.boost_clock)}</span>
+                        </div>
+                        <div class="strip-item">
+                            <span class="strip-label">Память</span>
+                            <span class="strip-value">${escapeHtml(shortMemory(data.memory_support))}</span>
+                        </div>
+                        <div class="strip-item">
+                            <span class="strip-label">iGPU</span>
+                            <span class="strip-value">${escapeHtml(igpuText(data))}</span>
+                        </div>
+                        <div class="strip-item more">
+                            <button class="strip-more-btn" title="Подробнее" onclick="alert('Полный паспорт — следующим шагом')">⋯</button>
+                        </div>
+                    </div>
+                </article>`;
             }).join('');
         }
 
-        document.getElementById('searchModal').addEventListener('click', function(e) {
-            if (e.target === this) closeModal();
-        });
+        render();
     </script>
 </body>
 </html>
